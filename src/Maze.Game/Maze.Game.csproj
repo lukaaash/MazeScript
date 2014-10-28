@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{7086F6A2-8A9D-451A-A49E-76C073F046B2}</ProjectGuid>
+    <ProjectGuid>{2D63AFB1-246F-4719-AFA4-D22C9A634274}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <OutputPath>bin</OutputPath>
@@ -17,30 +17,47 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="resources\sprites.png" />
+    <Content Include="resources\wall.png" />
+    <Content Include="resources\wall128.png" />
+    <Content Include="resources\walls.png" />
     <Content Include="style.css" />
     <Content Include="index.html" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="atlas.ts" />
-    <TypeScriptCompile Include="buffer.ts" />
-    <TypeScriptCompile Include="common.ts" />
-    <TypeScriptCompile Include="demo.ts" />
-    <TypeScriptCompile Include="interop.ts" />
-    <TypeScriptCompile Include="layer.ts" />
-    <TypeScriptCompile Include="N4.ts" />
-    <TypeScriptCompile Include="material.ts" />
-    <TypeScriptCompile Include="game.ts" />
-    <TypeScriptCompile Include="shader.ts" />
-    <TypeScriptCompile Include="texture.ts" />
+    <TypeScriptCompile Include="code\common\avatar.ts" />
+    <TypeScriptCompile Include="code\common\dictionary.ts" />
+    <TypeScriptCompile Include="code\common\maze.ts" />
+    <TypeScriptCompile Include="code\common\player.ts" />
+    <TypeScriptCompile Include="code\common\global.ts" />
+    <TypeScriptCompile Include="code\client\maze.ts" />
+    <TypeScriptCompile Include="code\N4\atlas.ts" />
+    <TypeScriptCompile Include="code\N4\buffer.ts" />
+    <TypeScriptCompile Include="code\N4\common.ts" />
+    <TypeScriptCompile Include="code\demo.ts" />
+    <TypeScriptCompile Include="code\N4\game.ts" />
+    <TypeScriptCompile Include="code\N4\interop.ts" />
+    <TypeScriptCompile Include="code\N4\layer.ts" />
+    <TypeScriptCompile Include="code\N4\material.ts" />
+    <TypeScriptCompile Include="code\N4\N4.ts" />
+    <TypeScriptCompile Include="code\N4\shader.ts" />
+    <TypeScriptCompile Include="code\N4\texture.ts" />
+    <TypeScriptCompile Include="code\N4\Window.d.ts" />
+    <TypeScriptCompile Include="code\server\client.ts" />
+    <TypeScriptCompile Include="code\server\server.ts" />
+    <TypeScriptCompile Include="code\server\worker.ts" />
+    <TypeScriptCompile Include="code\client\world.ts" />
+    <TypeScriptCompile Include="code\client\player.ts" />
+    <TypeScriptCompile Include="code\client\sprites.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="simple.vsh" />
-    <Content Include="simple.fsh" />
-    <Content Include="sprite.vsh" />
-    <Content Include="sprite.fsh" />
-    <Content Include="walls.fsh" />
-    <Content Include="walls.vsh" />
+    <Content Include="resources\simple.fsh" />
+    <Content Include="resources\simple.vsh" />
+    <Content Include="resources\sprite.fsh" />
+    <Content Include="resources\sprite.vsh" />
+    <Content Include="resources\walls.fsh" />
+    <Content Include="resources\walls.vsh" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -53,7 +70,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>Maze</RootNamespace>
+    <RootNamespace>Maze.Game</RootNamespace>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -63,9 +80,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>52512</DevelopmentServerPort>
+          <DevelopmentServerPort>65141</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:52512/</IISUrl>
+          <IISUrl>http://maze.local:65141/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

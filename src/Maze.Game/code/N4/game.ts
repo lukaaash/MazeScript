@@ -40,9 +40,12 @@ module N4 {
         private _events: Object;
         private _ready: boolean;
 
+        private _animationTime: number;
+        private _animationStart: number;
+
         // not implemented by N4 Shell
         private _canvas: HTMLCanvasElement;
-        private _requestAnimationId: Number;
+        private _requestAnimationId: number;
 
         // both
         _viewportX: number;
@@ -80,6 +83,7 @@ module N4 {
 
             } else {
 
+                this._animationStart = null;
                 this._requestAnimationId = null;
                 this._gl = null;
                 this._canvas = canvas;
@@ -150,6 +154,14 @@ module N4 {
                 callback(e);
         }
 
+        get animationTime(): number {
+            return this._animationTime;
+        }
+
+        get time(): number {
+            return performance.now();
+        }
+
         private _render(t: number) {
             var gl = this._gl;
             var color = this._backColor;
@@ -158,14 +170,19 @@ module N4 {
             gl.clearColor(color.R, color.G, color.B, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            var e = new Object();
-            e['time'] = t;
+            if (this._animationStart == null) {
+                this._animationStart = performance.now() - t;
+            }
 
-            this._raise('render', e);
+            this._animationTime = this._animationStart + t;
+
+            this._raise('render', this._animationTime);
+
+            this._animationTime = null;
         }
 
         private _renderEvent(t) {
-            this._render(t / 1000.0);
+            this._render(t);
 
             this._requestAnimationId = window.requestAnimationFrame(t => this._renderEvent(t));
         }
@@ -249,6 +266,7 @@ module N4 {
         }
 
         private _mouseEvent(event: MouseEvent) {
+
             event.preventDefault();
             if (event['handled'])
                 return;
@@ -290,6 +308,8 @@ module N4 {
         }
 
         private _keyEvent(event: KeyboardEvent) {
+            event.stopPropagation();
+
             if (event.type == 'keydown') {
                 if (event.keyCode == 116) return;
                 if (event.keyCode == 82 && event.ctrlKey) return;
@@ -329,6 +349,8 @@ module N4 {
 
                 } else {
                     c = 0;
+
+                    //console.log(event.type, ": ", event.key);
 
                     if (event.location == 3) { // DOM_KEY_LOCATION_NUMPAD
                         // Firefox doesn't assign 'proper' codes to these
@@ -642,16 +664,23 @@ module N4 {
             var req = new XMLHttpRequest();
 
             req.addEventListener("load", event => {
-                var target = event.target;
-                var e = new Success(this);
-                e['text'] = target['responseText'];
+                var target = <XMLHttpRequest>event.target;
+                var e;
+
+                if (target.status == 200) {
+                    e = new Success(this);
+                    e['text'] = target.responseText;
+                } else {
+                    e = new Failure(this, target.statusText);
+                    e['text'] = null;
+                    e['status'] = target.status;
+                }
                 callback(e);
             }, false);
 
             req.addEventListener("error", event => {
-                //TODO: these are almost certainly incorrect
-                var e = new Failure(this, event['message']);
-                e['code'] = event['code'];
+                // only fires for network-level events
+                var e = new Failure(this, 'Network error');
                 callback(e);
             }, false);
 
