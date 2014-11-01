@@ -21,6 +21,10 @@ bld/
 #Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 
+#TypeScript
+src/**/*.js
+src/**/*.js.map
+
 # Roslyn cache directories
 *.ide/
 
