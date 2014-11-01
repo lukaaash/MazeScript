@@ -3,7 +3,7 @@
 if (typeof importScripts === 'function') {
     importScripts('../common/dictionary.js');
     importScripts('../common/maze.js');
-    importScripts('../common/global.js');
+    importScripts('../common/world.js');
     importScripts('../common/player.js');
     importScripts('../common/avatar.js');   
     importScripts('../common/protocol.js');   
