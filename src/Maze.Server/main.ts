@@ -1,7 +1,7 @@
-﻿var ws = require("ws");
-var maze = require("../Maze.Game/out/server.js");
+﻿/// <reference path="../../third_party/typings/node.d.ts" />
 
-console.log(maze);
+var ws = require("ws");
+var maze = require("./server.js");
 
 var WebSocketServer = ws.Server;
 

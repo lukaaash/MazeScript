@@ -76,6 +76,9 @@
   <PropertyGroup>
     <RootNamespace>Maze.Game</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <ProjectExtensions>
@@ -86,7 +89,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>65141</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://maze.local:65141/</IISUrl>
+          <IISUrl>http://localhost:57331/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -100,7 +103,7 @@
     <TypeScriptTarget>ES5</TypeScriptTarget>
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
-    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptModuleKind>none</TypeScriptModuleKind>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptTarget>ES5</TypeScriptTarget>
@@ -110,6 +113,6 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>tsc $(ProjectDir)server.ts -out $(ProjectDir)out\server.js -d -sourcemap -t ES5</PostBuildEvent>
+    <PostBuildEvent>tsc $(ProjectDir)server.ts -out $(ProjectDir)..\Maze.Server\server.js -sourcemap -t ES5</PostBuildEvent>
   </PropertyGroup>
 </Project>
