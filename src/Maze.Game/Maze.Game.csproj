@@ -17,7 +17,7 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="resources\sprites.png" />
+    <Content Include="resources\sprites2.png" />
     <Content Include="resources\wall.png" />
     <Content Include="resources\wall128.png" />
     <Content Include="resources\walls.png" />
@@ -27,11 +27,13 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="code\common\avatar.ts" />
+    <TypeScriptCompile Include="code\common\common.ts" />
     <TypeScriptCompile Include="code\common\dictionary.ts" />
     <TypeScriptCompile Include="code\common\maze.ts" />
     <TypeScriptCompile Include="code\common\player.ts" />
-    <TypeScriptCompile Include="code\common\global.ts" />
     <TypeScriptCompile Include="code\client\maze.ts" />
+    <TypeScriptCompile Include="code\common\protocol.ts" />
+    <TypeScriptCompile Include="code\common\world.ts" />
     <TypeScriptCompile Include="code\N4\atlas.ts" />
     <TypeScriptCompile Include="code\N4\buffer.ts" />
     <TypeScriptCompile Include="code\N4\common.ts" />
@@ -46,10 +48,12 @@
     <TypeScriptCompile Include="code\N4\Window.d.ts" />
     <TypeScriptCompile Include="code\server\client.ts" />
     <TypeScriptCompile Include="code\server\server.ts" />
+    <TypeScriptCompile Include="code\server\socket.ts" />
     <TypeScriptCompile Include="code\server\worker.ts" />
     <TypeScriptCompile Include="code\client\world.ts" />
     <TypeScriptCompile Include="code\client\player.ts" />
     <TypeScriptCompile Include="code\client\sprites.ts" />
+    <TypeScriptCompile Include="server.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\simple.fsh" />
@@ -105,4 +109,7 @@
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>tsc $(ProjectDir)server.ts -out $(ProjectDir)out\server.js -d -sourcemap -t ES5</PostBuildEvent>
+  </PropertyGroup>
 </Project>

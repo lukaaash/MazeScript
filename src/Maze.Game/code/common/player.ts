@@ -1,4 +1,4 @@
-﻿/// <reference path="global.ts" />
+﻿/// <reference path="world.ts" />
 /// <reference path="maze.ts" />
 
 var NONE = -1;
@@ -52,6 +52,8 @@ class Player implements ITarget {
     private route: Array<number>;
     private current: number;
 
+    private moveTime: number;
+
     get id(): number {
         return this._id;
     }
@@ -77,7 +79,7 @@ class Player implements ITarget {
     //TODO: when creating a player, have the server assign its ID to ensure all clients activate an instance of Player at once
 
     constructor(options: PlayerOptions) {
-        var t = global.time | 0;
+        var t = world.time | 0;
 
         options.sprite |= 0;
         options.x |= 0;
@@ -98,9 +100,10 @@ class Player implements ITarget {
         this.nextT = null;
         this.nextX = this.fromX = options.x;
         this.nextY = this.fromY = options.y;
-        this.route = [0, NONE, options.x, options.y];
-        this.current = 4;
-        //this.lastMove = t;
+        this.route = [];
+        this.current = 0;
+
+        this.moveTime = null;
     }
 
     look(direction: number) {
@@ -111,9 +114,6 @@ class Player implements ITarget {
         this._id = id;
     }
 
-    // TODO: cas 't' mit jako argument a nedovolit prijimani paketu z minulosti
-    // TODO: odstanit z this.route pak bude bez problemu mozne zaznamy, ktere byly zprocesovane a jejichz nextTime < fromTime
-    // TODO: zakazat fromTime < t
     _move(decisionTime: number, fromTime: number, moves: Array<number>) {
         decisionTime |= 0;
         fromTime |= 0;
@@ -123,127 +123,131 @@ class Player implements ITarget {
             console.error("Attempt to change history detected.");
             return;
         }
-        
-        /*
-        // small lags are acceptable, large ones are problematic
-        var lag = decisionTime - fromTime;
-        if (lag > 0) {
-            console.log("Lag of " + lag + "ms detected.");
-        }
-        */
 
-        // find the last route element to keep
+        // find the last element to keep
         var route = this.route;
         var offset = -4;
         var nextTime = null;
         while ((offset + 4) < route.length) {
             offset += 4;
-            nextTime = route[offset];
+            nextTime = route[offset + 0];
             if (nextTime >= fromTime)
                 break;
 
             // remove legacy moves from the route
-            if (route.length > 4 && offset < this.current) {
+            if (nextTime < decisionTime && offset < this.current) {
                 route = route.slice(4);
                 this.current -= 4;
                 offset -= 4;
+                nextTime = null;
                 continue;
             }
         }
 
+        // if the route is empty, start with fromTime
+        if (nextTime == null)
+            nextTime = this.fromT;
+
+        // reject attempts to change partial steps
         if (nextTime > fromTime) {
-            // something is wrong
             console.error("Someting is wrong (nextTime > fromTime): " + nextTime + " > " + fromTime);
             return;
         }
 
-        // there will always be at least one move in the route
-
-        // insert a delay before appending the new route if needed
-        if (nextTime < fromTime) {            
-            // discard the remaining part of the route
-            route = route.slice(0, offset + 4);
-
-            var d = route[offset + 1];
-            var x = route[offset + 2];
-            var y = route[offset + 3];
-
-            if (d == NONE) {
-                route[offset + 0] = fromTime;
-            } else {
-                d = NONE;
-
-                // nextT, direction, nextX, nextY
-                route.push(fromTime);
-                route.push(d);
-                route.push(x);
-                route.push(y);
-
-                offset += 4;
-            }
-
-            // change the current move if needed
-            if (this.nextT == null && this.nextT < fromTime) {
-                this.current = offset;
-                this.direction = d;
-                this.fromT = 0;
-                this.fromX = x;
-                this.fromY = y;
-                this.nextT = fromTime;
-                this.nextX = x;
-                this.nextY = y;
-            }
-        }
-
-        var n = 0;
         // detect unchanged section of the route
-        for (n = 0; n < moves.length; n++) {
-            offset += 4;
-            if (offset >= route.length) {
-                offset -= 4;
-                break;
-            }
+        var n = 0;
+        if (nextTime == fromTime) {
+            for (n = 0; n < moves.length; n++) {
+                offset += 4;
+                if (offset >= route.length) {
+                    offset -= 4;
+                    break;
+                }
 
-            if (nextTime != fromTime) {
-                offset -= 4;
-                break;
-            }
+                if (nextTime != fromTime) {
+                    offset -= 4;
+                    break;
+                }
 
-            var d = route[offset + 1];
-            if (d != moves[n]) {
-                offset -= 4;
-                break;
-            }
+                var d = route[offset + 1];
+                if (d != moves[n]) {
+                    offset -= 4;
+                    break;
+                }
 
-            nextTime = route[offset];
-            fromTime += this.stepT;
+                nextTime = route[offset];
+                fromTime += this.stepT;
+            }
         }
 
         // get position at the end of unchanged section of the route
-        x = route[offset + 2];
-        y = route[offset + 3];
-
-        var skip = false;
-
-        if ((offset + 4) < route.length) {
-            // remove changed section of the route
-            route = route.slice(0, offset + 4);
+        var x;
+        var y;
+        if (offset >= 0) {
+            x = route[offset + 2];
+            y = route[offset + 3];
         } else {
-            // adding empty move to the end is not needed
-            if (moves.length == 0)
-                skip = true;
+            x = this.nextX;
+            y = this.nextY;
         }
 
-        // reset the current index if no longer valid (we'll set it again later)
-        if (this.current > route.length)
-            this.current = -1;
+        // remove changed section of the route
+        var discarded = false;
+        if ((offset + 4) < route.length) {
+            route = route.slice(0, offset + 4);
+            discarded = true;
+        }
 
-        if (!skip) {
+        // determine whether to change the current move
+        var reroute = false;
+        if (this.current >= route.length) {
+
+            if (this.current > route.length) {
+                this.current = route.length;
+                reroute = true;
+            } else if (this.nextT == null) {
+                reroute = true;
+            }
+        }
+
+        // report the new route
+        //if (discarded || moves.length > 0) {
             this.onreport(decisionTime, fromTime, moves, n);
+        //} else {
+        //    return;
+        //}
+
+        // determine move time to make it possible to change the current move
+        var t = this.moveTime;
+
+        // insert a delay before appending the new route if needed
+        if (nextTime < fromTime) {
+            // nextT, direction, nextX, nextY
+            route.push(fromTime);
+            route.push(NONE);
+            route.push(x);
+            route.push(y);
+            offset += 4;
+
+            // change the current move if needed
+            if (reroute) {
+                if (t < fromTime) {
+                    this.current = route.length;
+                    this.direction = NONE;
+                    this.fromT = nextTime;
+                    this.fromX = x;
+                    this.fromY = y;
+                    this.nextT = fromTime;
+                    this.nextX = x;
+                    this.nextY = y;
+                    reroute = false;
+                }
+            }
+
+            nextTime = fromTime;
         }
 
         // add new moves to the route
-        nextTime = fromTime;
         for (var i = n; n < moves.length; n++) {
             nextTime = fromTime + this.stepT;
             d = moves[n];
@@ -255,15 +259,18 @@ class Player implements ITarget {
             route.push(ny);
 
             // change the current move if needed
-            if (decisionTime >= fromTime && decisionTime < nextTime) {
-                this.current = route.length - 4;
-                this.direction = d;
-                this.fromT = fromTime;
-                this.fromX = x;
-                this.fromY = y;
-                this.nextT = nextTime;
-                this.nextX = nx;
-                this.nextY = ny;
+            if (reroute) {
+                if (t >= fromTime && t < nextTime) {
+                    this.current = route.length;
+                    this.direction = d;
+                    this.fromT = fromTime;
+                    this.fromX = x;
+                    this.fromY = y;
+                    this.nextT = nextTime;
+                    this.nextX = nx;
+                    this.nextY = ny;
+                    reroute = false;
+                }
             }
 
             x = nx;
@@ -271,30 +278,16 @@ class Player implements ITarget {
             fromTime = nextTime;
         }
 
-        // set last current position if no current move found
-        if (this.current < 0) {
-            var offset = route.length - 4;
-            this.direction = NONE;
-            this.fromT = route[offset + 0];
-            this.nextT = null;
-            var d = route[offset + 1];
-            this.fromX = this.nextX = route[offset + 2] + DX[d];
-            this.fromY = this.nextY = route[offset + 3] + DY[d];
+        // change the current move if needed
+        if (reroute) {
             this.current = route.length;
-        }
-
-        /*
-        if (this.nextT == null && this.current < route.length) {
-            var offset = this.current;
-            this.direction = d;
+            this.direction = NONE;
             this.fromT = fromTime;
-            this.fromX = x;
-            this.fromY = y;
-            this.nextT = nextTime;
-            this.nextX = nx;
-            this.nextY = ny;
+            this.nextT = null;
+            this.fromX = this.nextX = x;
+            this.fromY = this.nextY = y;
+            reroute = false;
         }
-        */
 
         // activate the route
         this.route = route;
@@ -329,7 +322,7 @@ class Player implements ITarget {
                     this.current = current;
                     len -= 4;
 
-                    if (len <= 12)
+                    if (len == 8 || len == 0)
                         think = true;
 
                 } else {
@@ -350,7 +343,9 @@ class Player implements ITarget {
 
     onrender(t: number) {
 
+        this.moveTime = t;
         this.onmove(t);
+        this.moveTime = null;
 
         var x;
         var y;

@@ -3,12 +3,27 @@
 /// <reference path="maze.ts" />
 /// <reference path="../common/player.ts" />
 
+class LocalAvatar extends Avatar {
+
+    private sprites: Sprites;
+
+    constructor(sprites: Sprites, id: number, options: PlayerOptions) {
+        super(id, options);
+
+        this.sprites = sprites;
+    }
+
+    render(x: number, y: number, sprite: number, direction: number, step: number) {
+        this.sprites.render(x, y, sprite, direction, step);
+    }
+}
+
 class LocalPlayer extends Player {
 
     private sprites: Sprites;
     private lastActionT: number;
     private shouldThink: boolean;
-    private planning: boolean;
+    private decisionTime: number;
     private moves: Array<number>;
 
     constructor(sprites: Sprites, options: PlayerOptions) {
@@ -17,7 +32,7 @@ class LocalPlayer extends Player {
         this.sprites = sprites;
         this.lastActionT = world.time | 0;;
         this.shouldThink = false;
-        this.planning = false;
+        this.decisionTime = null;
         this.moves = [];
 
         world.playerCreate(this, options);
@@ -46,20 +61,18 @@ class LocalPlayer extends Player {
     }
 
     move(moves: Array<number>) {
-        if (!this.planning) {
-            console.error("move(...) can only be called from plan()");
+        if (this.decisionTime == null) {
+            console.error("move(...) can only be called from think() or idle()");
             return;
         }
 
-        var decisionTime = world.time | 0;
         var fromTime;
-
         if (this.t != null)
             fromTime = this.t;
         else
-            fromTime = decisionTime + 50; // delay of 50 ms for better network play
+            fromTime = this.decisionTime + 50; // delay of 50 ms for better network play
 
-        super._move(decisionTime, fromTime, moves);
+        super._move(this.decisionTime, fromTime, moves);
     }
 
     poke() {
@@ -84,7 +97,7 @@ class LocalPlayer extends Player {
         var think = super.onmove(t);
         this.shouldThink = this.shouldThink || think;
 
-        this.planning = true;
+        this.decisionTime = t;
 
         if (this.t == null) {
             if ((t - this.lastActionT) > 2000) {
@@ -101,7 +114,7 @@ class LocalPlayer extends Player {
             }
         }
 
-        this.planning = false;
+        this.decisionTime = null;
 
         return think;
     }

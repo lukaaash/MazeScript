@@ -1,11 +1,23 @@
 ﻿/// <reference path="../N4/N4.ts" />
 /// <reference path="../common/maze.ts" />
-/// <reference path="../common/global.ts" />
+/// <reference path="../common/world.ts" />
+/// <reference path="../common/protocol.ts" />
+/// <reference path="../common/avatar.ts" />
 /// <reference path="maze.ts" />
 
-class World implements IGlobal {
+interface IWorld {
+    playerCreate? (player: LocalPlayer, options: PlayerOptions);
+    playerMove? (packet: Array<any>);
+    onready?: Function;
+    sync? ();
+}
+
+
+class World implements IWorld {
 
     private _game: N4.Game;
+    private _sprites: Sprites;
+
     private _timeDelta: number;
     private _maze: Maze;
     private _onready: Function;
@@ -50,22 +62,22 @@ class World implements IGlobal {
     }
 
     init() {
-        this.send(0);
+        this.send(INIT);
     }
 
     sync() {
-        this.send(1, [this.time]);
+        this.send(SYNC, [this.time]);
     }
 
     playerCreate(player: LocalPlayer, options: PlayerOptions) {
         var requestId = ++this.requestId;
         this.requests[requestId] = player;
         var data = [requestId, options];
-        this.send(4, data);
+        this.send(CREATE_PLAYER, data);
     }
 
     playerMove(data: Array<any>) {
-        this.send(5, data);
+        this.send(MOVE_PLAYER, data);
     }
 
     send(command: number, data?: Array<any>) {
@@ -98,7 +110,7 @@ class World implements IGlobal {
                 var offset = ((t1 - t0) + (t2 - t3)) / 2.0;
                 this._timeDelta += offset;
                 console.log("<- TIME", "delay", delay, "offset", offset, "delta", this._timeDelta);
-                //console.log(t0, t1, t2, t3);
+                console.log(t0, t1, t2, t3);
 
                 if (!this._ready) {
                     this._ready = true;
@@ -107,8 +119,8 @@ class World implements IGlobal {
                 break;
 
             case 104:
-                var requestId = data[0];
-                var playerId = data[1];
+                var requestId = <number>data[0];
+                var playerId = <number>data[1];
                 console.log("<- PLAYER_ID", "request_id", requestId, "player_id", playerId);
 
                 var player = <LocalPlayer>this.requests[requestId];
@@ -118,14 +130,45 @@ class World implements IGlobal {
 
                 //TODO: make it possible for the server to deny player create requests
                 break;
+
+            case CREATE_AVATAR:
+                var playerId = <number>data[0];
+                var playerOptions = <PlayerOptions>data[1];
+                console.log("<- CREATE_AVATAR", "player_id", playerId, "options", playerOptions);
+
+                var avatar = new LocalAvatar(this._sprites, playerId, playerOptions);
+                this._players.add(playerId, avatar);
+                break;
+
+            case MOVE_PLAYER:
+                var decisionTime = <number>data[0];
+                var playerId = <number>data[1];
+                var fromTime = <number>data[2];
+                var moves = <Array<number>>data[3];
+                console.log("-> MOVE_PLAYER", 'player_id', playerId, 'from_time', decisionTime + "+" + fromTime, 'moves', JSON.stringify(moves));
+
+                //TODO: detect lags
+
+                //TODO: make sure that (fromTime >= previousFromTime)
+                fromTime += decisionTime;
+
+                var avatar = <LocalAvatar>this._players.getItem(playerId);
+                if (!(avatar != null)) {
+                    console.warn("Received command for nonexistent player.");
+                    return;
+                }
+
+                avatar._move(decisionTime, fromTime, moves);
+                break;                
         }
     }
 
 
-    constructor(game: N4.Game) {
+    constructor(game: N4.Game, sprites: Sprites) {
         this._game = game;
+        this._sprites = sprites;
         this._timeDelta = 0;
-        this._maze = null;
+        this._maze = new Maze2(64, 48);
         this._onready = function (e) { };
         this._ready = false;
 
@@ -136,17 +179,13 @@ class World implements IGlobal {
     }
 }
 
-var world: World = null;
-
 class LocalWorld extends World {
 
     private worker: Worker;
     private supportsTransferables;
 
-    constructor(game: N4.Game) {
-        super(game);
-
-        this.maze = new Maze2(64, 48);
+    constructor(game: N4.Game, sprites: Sprites) {
+        super(game, sprites);
 
         this.worker = new Worker("code/server/worker.js");
 
@@ -170,29 +209,9 @@ class LocalWorld extends World {
         if (!(data != null))
             data = [];
 
-        //var json = JSON.stringify(data);
-        //console.log("->", command, json);
-
         data['command'] = command;
 
         this.worker.postMessage(data);
-
-        /*
-        var transferables = this.supportsTransferables;
-
-        if (transferables == true) {
-            this.worker.postMessage(data, [data]);
-        } else if (transferables == false) {
-            this.worker.postMessage(data);
-        } else {
-            this.worker.postMessage(data, [data]);
-            if (typeof data.length === 'undefined') {
-                this.supportsTransferables = true;
-            } else {
-                this.supportsTransferables = false;
-            }
-        }
-        */
     }
 
 }
@@ -201,64 +220,39 @@ class RemoteWorld extends World {
 
     private socket: WebSocket;
 
-    send(command: number, packet?: any) {
+    constructor(game: N4.Game, sprites: Sprites, url: string) {
+        super(game, sprites);
 
-        var message = [command, this.time];
-        if (packet != null)
-            message.push(packet);
+        this.socket = new WebSocket(url, 'maze');
 
-        var json = JSON.stringify(message);
-        console.log("->", json);
-        this.socket.send(json);
+        this.socket.onopen = (e) => {
+            this.init();
+        };
+
+        this.socket.onmessage = (e: MessageEvent) => {
+            var json = e.data;
+
+            var packet = <Array<any>>JSON.parse(json);
+            var command = packet[0] | 0;
+            var data = packet[1];
+
+            this.process(command, data);
+        };
+
+        this.socket.onclose = (e) => {
+            //var a : CloseEvent;
+            //wasClean;
+            //reason
+            alert('disconnected: ' + e.code);
+        };
+
     }
 
-    constructor(game: N4.Game) {
-        super(game);
-
-        this.socket = null;
-
-        this.game.loadText('/start', e => {
-            if (e['success']) {
-
-                var info = JSON.parse(e.text);
-
-                var url = <string>info['url'];
-
-                var loc = window.location
-                var scheme: string;
-                if (loc.protocol === "https:") {
-                    scheme = "wss://";
-                } else {
-                    scheme = "ws://";
-                }
-                url = scheme + loc.host + url;
-
-                this.socket = new WebSocket(url, 'maze');
-
-                this.socket.onopen = (e) => {
-
-                    this.sync();
-
-                    if (typeof this.onready == 'function') {
-                        this.onready(e);
-                    }
-                };
-
-                this.socket.onmessage = (e: MessageEvent) => {
-                    //alert(e.data);
-                };
-
-                this.socket.onclose = (e) => {
-                    //var a : CloseEvent;
-                    //wasClean;
-                    //reason
-                    alert('disconnected: ' + e.code);
-                };
-
-            } else {
-                alert(e['message']);
-            }
-        });
+    send(command: number, data?: any) {
+        command |= 0;
+        var json = JSON.stringify([command, data]);
+        console.log("->", json);
+        this.socket.send(json);
     }
 
 

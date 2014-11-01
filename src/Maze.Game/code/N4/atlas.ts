@@ -97,7 +97,7 @@ module N4 {
             this._sourceOffset = 0;
 
             if (typeof Atlas._triangles === 'undefined') {
-                var triangles = new Uint16Array(3 * SPRITE_BUFFER_CAPACITY / 4);
+                var triangles = new Uint16Array(6 * SPRITE_BUFFER_CAPACITY / 4);
 
                 var vertex = 0;
                 for (var i = 0; i < triangles.length; i += 6) {
@@ -171,7 +171,7 @@ module N4 {
             gl.vertexAttribPointer(LOC_SPRITE_PARAMS, 2, gl.UNSIGNED_SHORT, false, SPRITE_VERTEX_BYTE_LENGTH, 28);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Atlas._triangles._buffer);
-            gl.drawElements(gl.TRIANGLES, 3 * this._sourceOffset / 2, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, 6 * this._sourceOffset / 4, gl.UNSIGNED_SHORT, 0);
 
             this._sourceOffset = 0;
         }

@@ -5,7 +5,8 @@ if (typeof importScripts === 'function') {
     importScripts('../common/maze.js');
     importScripts('../common/global.js');
     importScripts('../common/player.js');
-    importScripts('../common/avatar.js');
+    importScripts('../common/avatar.js');   
+    importScripts('../common/protocol.js');   
     importScripts('server.js');
     importScripts('client.js');
 }
@@ -19,14 +20,29 @@ interface IWorkerSelf {
 
 class WorkerServer extends Server {
     private worker: IWorkerSelf;
-    private client: Client;
+
+    format(command: number, data?: Array<any>) {
+        if (!(data != null))
+            data = [];
+
+        if (!Array.isArray(data)) {
+            console.error('[server] Invalid data');
+            return;
+        }
+
+        data['command'] = command;
+
+        return data;
+    }
 
     constructor() {
         super();
 
         this.worker = <IWorkerSelf><any>self;
 
-        this.client = new WorkerClient(this.worker);
+        var client = new WorkerClient(this.worker);
+
+        this.accept(client);
 
         this.worker.onmessage = e => {
             var data = e.data;
@@ -35,7 +51,7 @@ class WorkerServer extends Server {
             if (typeof command !== 'number')
                 console.error('[server] Invalid command');
             else
-                this.process(this.client, command, data);
+                this.process(client, command, data);
         };
     }
 }
@@ -49,27 +65,19 @@ class WorkerClient extends Client {
         this.worker = worker;
     }
 
-    send(command: number, data?: Array<any>) {
-        if (!(data != null))
-            data = [];
-
-        if (!Array.isArray(data)) {
-            console.error('[server] Invalid data');
-            return;
-        }
-
-        data['command'] = command;
-
-        this.worker.postMessage(data);
+    send(packet: any) {
+        this.worker.postMessage(packet);
     }
 
     fail(message: string) {
-        this.send(13, [0, message]);
+        //this.send(13, [0, message]);
         this.worker.close();
     }
 }
 
-global = server = new WorkerServer();
+var server: Server = new WorkerServer();
+var world: IWorld = server;
+
 
 
 

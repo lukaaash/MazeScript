@@ -1,9 +1,11 @@
-﻿/// <reference path="../common/global.ts" />
+﻿/// <reference path="../common/common.ts" />
 /// <reference path="../common/player.ts" />
 /// <reference path="../common/avatar.ts" />
+/// <reference path="../common/dictionary.ts" />
+/// <reference path="../common/protocol.ts" />
 /// <reference path="client.ts" />
 
-class Server implements IGlobal {
+class Server implements IWorld {
 
     private version: number;
 
@@ -41,8 +43,45 @@ class Server implements IGlobal {
 
         this._players = new Dictionary<number, Player>();
         this._nextPlayerId = 1;
+
+        setInterval(() => this.tick(), 50);
     }
 
+    tick() {
+        var t = this.time;
+        this._players.forEach((player, playerId) => {
+            player.onmove(t);
+        });
+    }
+
+    accept(client: Client) {
+        var clientId = this._nextClientId++;
+        client.setId(clientId);
+        this._clients.add(clientId, client);
+    }
+
+    // rename to 'encode' and add 'decode' as well
+    format(command: number, data?: Array<any>) {
+        console.error("Method not implemented.");
+    }
+
+    send(client: Client, command: number, data?: Array<any>) {
+        var packet = this.format(command, data);
+        client.send(packet);
+    }
+
+    sendExcept(client: Client, command: number, data?: Array<any>) {
+        var packet = this.format(command, data);
+
+        this._clients.forEach(peer => {
+            if (peer == client)
+                return;
+
+            peer.send(packet)
+        });
+    }
+
+    //TODO: make this accept 'packet' instead of command/data to make it possible to forward commands without having to re-encode them
     process(client: Client, command: number, data: any) {
 
         var reply = command + 100;
@@ -53,21 +92,18 @@ class Server implements IGlobal {
                 break;
             case 0:
                 console.log("-> INIT");
-                if (client.id != 0) {
+                if (client.initialized) {
                     client.fail("Received duplicate INIT message.");
                     return;
                 }
 
-                var clientId = this._nextClientId++;
-                client.setId(clientId);
-                this._clients.add(clientId, client);
-
-                client.send(reply, [this.version, clientId, this.time]);
+                this.send(client, reply, [this.version, client.id, this.time]);
+                client.initialize();
                 break;
             case 1:
                 var t0 = data[0];
                 console.log("-> SYNC", 'client_time', t0);
-                client.send(reply, [t0, data['received'], this.time]);
+                this.send(client, reply, [t0, data['received'], this.time]);
                 break;
 
             case 4:
@@ -79,7 +115,8 @@ class Server implements IGlobal {
                 var player = new Avatar(playerId, playerOptions);
                 this._players.add(playerId, player);
 
-                client.send(reply, [requestId, playerId]);
+                this.send(client, reply, [requestId, playerId]);
+                this.sendExcept(client, CREATE_AVATAR, [playerId, playerOptions]);
                 break;
 
             case 5:
@@ -88,6 +125,8 @@ class Server implements IGlobal {
                 var fromTime = <number>data[2];
                 var moves = <Array<number>>data[3];
                 console.log("-> MOVE_PLAYER", 'player_id', playerId, 'from_time', decisionTime + "+" + fromTime, 'moves', JSON.stringify(moves));
+
+                //TODO: detect lags
 
                 //TODO: make sure that (fromTime >= previousFromTime)
                 fromTime += decisionTime;
@@ -100,12 +139,12 @@ class Server implements IGlobal {
 
                 player._move(decisionTime, fromTime, moves);
 
+                this.sendExcept(client, MOVE_PLAYER, data);
                 break;
 
 
         }
     }
-
 }
 
-var server: Server = null;
+

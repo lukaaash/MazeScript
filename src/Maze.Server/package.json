@@ -1,0 +1,13 @@
+{
+  "name": "Maze",
+  "version": "0.1.0",
+  "description": "MazeScript",
+  "main": "main.js",
+  "author": {
+    "name": "Lukas Pokorny",
+    "email": "lukas@nuane.com"
+  },
+  "dependencies": {
+    "ws": "^0.4.32"
+  }
+}

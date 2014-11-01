@@ -18,6 +18,9 @@ bld/
 [Bb]in/
 [Oo]bj/
 
+#Node.js Tools for Visual Studio
+.ntvs_analysis.dat
+
 # Roslyn cache directories
 *.ide/
 
