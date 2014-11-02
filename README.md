@@ -2,8 +2,13 @@ MazeScript
 ==========
 
 Multiplayer online maze game
+----------------------------
 
-Currently in early stage of development
+- Written in TypeScript
+- Uses WebGL, WebSockets and Workers
+- Supports modern browsers
 
-I'm learning TypeScript as I code, so please beware ;-)
+Currently in early stage of development.
+
+I'm learning TypeScript as I code, so please beware! ;-)
 
