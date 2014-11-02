@@ -20,10 +20,9 @@ class Avatar extends Player {
     }
 
     onstep(direction: number) {
-        console.log("Avatar", this.id, ": move", this.lastX, this.lastY, "->", this.x, this.y);
+        //console.log("Avatar", this.id, ": move", this.lastX, this.lastY, "->", this.x, this.y);
         this.lastX = this.x;
         this.lastY = this.y;
     }
-
 
 }

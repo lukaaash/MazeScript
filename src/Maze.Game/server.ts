@@ -1,5 +1,5 @@
-﻿/// <reference path="code/server/server.ts" />
-/// <reference path="code/server/socket.ts" />
+﻿/// <reference path="server/server.ts" />
+/// <reference path="server/socket.ts" />
 
 declare var module: any;
 

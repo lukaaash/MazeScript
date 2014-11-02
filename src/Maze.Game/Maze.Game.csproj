@@ -17,42 +17,40 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="index.html" />
     <Content Include="resources\sprites2.png" />
-    <Content Include="resources\wall.png" />
     <Content Include="resources\wall128.png" />
     <Content Include="resources\walls.png" />
-    <Content Include="style.css" />
-    <Content Include="index.html" />
-    <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="code\common\avatar.ts" />
-    <TypeScriptCompile Include="code\common\common.ts" />
-    <TypeScriptCompile Include="code\common\dictionary.ts" />
-    <TypeScriptCompile Include="code\common\maze.ts" />
-    <TypeScriptCompile Include="code\common\player.ts" />
-    <TypeScriptCompile Include="code\client\maze.ts" />
-    <TypeScriptCompile Include="code\common\protocol.ts" />
-    <TypeScriptCompile Include="code\common\world.ts" />
-    <TypeScriptCompile Include="code\N4\atlas.ts" />
-    <TypeScriptCompile Include="code\N4\buffer.ts" />
-    <TypeScriptCompile Include="code\N4\common.ts" />
-    <TypeScriptCompile Include="code\demo.ts" />
-    <TypeScriptCompile Include="code\N4\game.ts" />
-    <TypeScriptCompile Include="code\N4\interop.ts" />
-    <TypeScriptCompile Include="code\N4\layer.ts" />
-    <TypeScriptCompile Include="code\N4\material.ts" />
-    <TypeScriptCompile Include="code\N4\N4.ts" />
-    <TypeScriptCompile Include="code\N4\shader.ts" />
-    <TypeScriptCompile Include="code\N4\texture.ts" />
-    <TypeScriptCompile Include="code\N4\Window.d.ts" />
-    <TypeScriptCompile Include="code\server\client.ts" />
-    <TypeScriptCompile Include="code\server\server.ts" />
-    <TypeScriptCompile Include="code\server\socket.ts" />
-    <TypeScriptCompile Include="code\server\worker.ts" />
-    <TypeScriptCompile Include="code\client\world.ts" />
-    <TypeScriptCompile Include="code\client\player.ts" />
-    <TypeScriptCompile Include="code\client\sprites.ts" />
+    <TypeScriptCompile Include="common\avatar.ts" />
+    <TypeScriptCompile Include="common\common.ts" />
+    <TypeScriptCompile Include="common\dictionary.ts" />
+    <TypeScriptCompile Include="common\maze.ts" />
+    <TypeScriptCompile Include="common\player.ts" />
+    <TypeScriptCompile Include="client\maze.ts" />
+    <TypeScriptCompile Include="common\protocol.ts" />
+    <TypeScriptCompile Include="common\world.ts" />
+    <TypeScriptCompile Include="ngles\atlas.ts" />
+    <TypeScriptCompile Include="ngles\buffer.ts" />
+    <TypeScriptCompile Include="ngles\common.ts" />
+    <TypeScriptCompile Include="game.ts" />
+    <TypeScriptCompile Include="ngles\game.ts" />
+    <TypeScriptCompile Include="ngles\interop.ts" />
+    <TypeScriptCompile Include="ngles\layer.ts" />
+    <TypeScriptCompile Include="ngles\material.ts" />
+    <TypeScriptCompile Include="ngles\all.ts" />
+    <TypeScriptCompile Include="ngles\shader.ts" />
+    <TypeScriptCompile Include="ngles\texture.ts" />
+    <TypeScriptCompile Include="ngles\Window.d.ts" />
+    <TypeScriptCompile Include="server\avatar2.ts" />
+    <TypeScriptCompile Include="server\client.ts" />
+    <TypeScriptCompile Include="server\server.ts" />
+    <TypeScriptCompile Include="server\socket.ts" />
+    <TypeScriptCompile Include="server\worker.ts" />
+    <TypeScriptCompile Include="client\world.ts" />
+    <TypeScriptCompile Include="client\player.ts" />
+    <TypeScriptCompile Include="client\sprites.ts" />
     <TypeScriptCompile Include="server.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -62,12 +60,10 @@
     <Content Include="resources\sprite.vsh" />
     <Content Include="resources\walls.fsh" />
     <Content Include="resources\walls.vsh" />
-    <None Include="web.Debug.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
-    <None Include="web.Release.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="web.config" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -13,6 +13,16 @@ var wss = new WebSocketServer({
 
 wss.on('connection', function (ws) {
 
+    /*
+    var send = ws.send;
+
+    ws.send = function (data) {
+        send.call(ws, data, function (error) {
+            console.log("Error while sending: %s", error);
+        });
+    };
+    */
+
     maze.accept(ws);
 
     /*

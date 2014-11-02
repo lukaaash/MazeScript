@@ -19,11 +19,19 @@ class Dictionary<K, V> {
         this.setItem(key, value);
     }
 
+    remove(key: K) {
+        if (!this.contains(key))
+            throw "Dictionary does not contain the specified item.";
+
+        delete this._values[<string><any>key];
+
+    }
+
     setItem(key: K, value: V) {
         this._values[<string><any>key] = value;
     }
 
-    getItem(key: K) {
+    getItem(key: K): V {
         if (!this.contains(key))
             return this._undefined;
 

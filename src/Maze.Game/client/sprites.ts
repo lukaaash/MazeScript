@@ -1,4 +1,4 @@
-﻿/// <reference path="../N4/N4.ts" />
+﻿/// <reference path="../ngles/all.ts" />
 
 var gl = WebGLRenderingContext;
 

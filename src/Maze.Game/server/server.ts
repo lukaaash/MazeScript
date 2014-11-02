@@ -1,8 +1,8 @@
 ﻿/// <reference path="../common/common.ts" />
 /// <reference path="../common/player.ts" />
-/// <reference path="../common/avatar.ts" />
 /// <reference path="../common/dictionary.ts" />
 /// <reference path="../common/protocol.ts" />
+/// <reference path="avatar2.ts" />
 /// <reference path="client.ts" />
 
 class Server implements IWorld {
@@ -14,7 +14,7 @@ class Server implements IWorld {
     private _clients: Dictionary<number, Client>;
     private _nextClientId: number;
 
-    private _players: Dictionary<number, Player>;
+    private _players: Dictionary<number, ServerAvatar>;
     private _nextPlayerId: number;
 
     get time(): number {
@@ -41,7 +41,7 @@ class Server implements IWorld {
         this._clients = new Dictionary<number, Client>();
         this._nextClientId = 1;
 
-        this._players = new Dictionary<number, Player>();
+        this._players = new Dictionary<number, ServerAvatar>();
         this._nextPlayerId = 1;
 
         setInterval(() => this.tick(), 50);
@@ -58,6 +58,21 @@ class Server implements IWorld {
         var clientId = this._nextClientId++;
         client.setId(clientId);
         this._clients.add(clientId, client);
+    }
+
+    abandon(client: Client) {
+
+        this._players.forEach(player => {
+
+            if (player.client == client) {
+                this.sendExcept(client, REMOVE_PLAYER, [player.id]);
+
+                this._players.remove(player.id);
+            }
+        });
+
+
+        this._clients.remove(client.id);
     }
 
     // rename to 'encode' and add 'decode' as well
@@ -100,10 +115,24 @@ class Server implements IWorld {
                 this.send(client, reply, [this.version, client.id, this.time]);
                 client.initialize();
                 break;
+
             case 1:
                 var t0 = data[0];
                 console.log("-> SYNC", 'client_time', t0);
                 this.send(client, reply, [t0, data['received'], this.time]);
+                break;
+
+            case 3:
+                this._players.forEach(player => {
+
+                    if (player.client != client) {
+
+                        var playerOptions = player.serialize();
+
+                        this.send(client, CREATE_AVATAR, [player.id, playerOptions]);
+                    }
+                });
+
                 break;
 
             case 4:
@@ -112,7 +141,7 @@ class Server implements IWorld {
                 console.log("-> CREATE_PLAYER", 'request_id', requestId, 'options', playerOptions);
 
                 var playerId = this._nextPlayerId++;
-                var player = new Avatar(playerId, playerOptions);
+                var player = new ServerAvatar(client, playerId, playerOptions);
                 this._players.add(playerId, player);
 
                 this.send(client, reply, [requestId, playerId]);
@@ -124,14 +153,14 @@ class Server implements IWorld {
                 var playerId = <number>data[1];
                 var fromTime = <number>data[2];
                 var moves = <Array<number>>data[3];
-                console.log("-> MOVE_PLAYER", 'player_id', playerId, 'from_time', decisionTime + "+" + fromTime, 'moves', JSON.stringify(moves));
+                //console.log("-> MOVE_PLAYER", 'player_id', playerId, 'from_time', decisionTime + "+" + fromTime, 'moves', JSON.stringify(moves));
 
                 //TODO: detect lags
 
                 //TODO: make sure that (fromTime >= previousFromTime)
                 fromTime += decisionTime;
 
-                var player = <Avatar>this._players.getItem(playerId);
+                var player = this._players.getItem(playerId);
                 if (!(player != null)) {
                     client.fail("Received command for nonexistent player.");
                     return;

@@ -1,4 +1,4 @@
-﻿/// <reference path="../N4/N4.ts" />
+﻿/// <reference path="../ngles/all.ts" />
 /// <reference path="../common/maze.ts" />
 /// <reference path="../common/world.ts" />
 /// <reference path="../common/protocol.ts" />
@@ -65,6 +65,10 @@ class World implements IWorld {
         this.send(INIT);
     }
 
+    getAvatars() {
+        this.send(GET_AVATARS);
+    }
+
     sync() {
         this.send(SYNC, [this.time]);
     }
@@ -115,7 +119,10 @@ class World implements IWorld {
                 if (!this._ready) {
                     this._ready = true;
                     this._onready(new N4.Success(this));
+
+                    this.getAvatars();
                 }
+
                 break;
 
             case 104:
@@ -155,11 +162,22 @@ class World implements IWorld {
                 var avatar = <LocalAvatar>this._players.getItem(playerId);
                 if (!(avatar != null)) {
                     console.warn("Received command for nonexistent player.");
-                    return;
+                    break;
                 }
 
                 avatar._move(decisionTime, fromTime, moves);
-                break;                
+                break;
+            
+            case REMOVE_PLAYER:
+                var playerId = <number>data[0];
+                var avatar = <LocalAvatar>this._players.getItem(playerId);
+                if (!(avatar != null)) {
+                    console.warn("Received nonexistent player.");
+                    break;
+                }
+
+                this._players.remove(playerId);
+                break;
         }
     }
 

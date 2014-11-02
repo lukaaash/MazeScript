@@ -27,6 +27,18 @@ class WebSocketServer extends Server {
 
         this.accept(client);
 
+        socket.onclose = e => {
+            console.log("WebSocket closed: ", e.code);
+
+            this.abandon(client);
+        };
+
+        socket.onerror = e => {
+            console.log("WebSocket error: ", e);
+
+            this.abandon(client);
+        };
+
         socket.onmessage = (e: MessageEvent) => {
             var received = performance.now();
             var json = e.data;
@@ -39,7 +51,7 @@ class WebSocketServer extends Server {
                 data['received'] = received;
 
             this.process(client, command, data);
-        }
+        };
     }
 
 }
@@ -54,7 +66,7 @@ class WebSocketClient extends Client {
     }
 
     send(packet: any) {
-        console.log("Sending", packet);
+        //console.log("Sending", packet);
         this.socket.send(packet);
     }
 

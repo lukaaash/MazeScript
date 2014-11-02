@@ -1,4 +1,4 @@
-﻿/// <reference path="N4/N4.ts" />
+﻿/// <reference path="ngles/all.ts" />
 /// <reference path="client/world.ts" />
 /// <reference path="client/player.ts" />
 /// <reference path="client/sprites.ts" />
@@ -220,8 +220,8 @@ game.on('ready', () => {
 
     var sprites = new Sprites();
 
-    world = new LocalWorld(game, sprites);
-    //world = new RemoteWorld(game, sprites, url);
+    //world = new LocalWorld(game, sprites);
+    world = new RemoteWorld(game, sprites, url);
 
     world.onready = () => {
         //alert('ready');

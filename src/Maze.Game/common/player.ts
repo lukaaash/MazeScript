@@ -48,11 +48,11 @@ class Player implements ITarget {
     private nextX: number;
     private nextY: number;
 
+    private moveTime: number;
+
     // each move sequence has 4 components: nextT, direction, nextX, nextY
     private route: Array<number>;
     private current: number;
-
-    private moveTime: number;
 
     get id(): number {
         return this._id;
@@ -74,9 +74,15 @@ class Player implements ITarget {
         return this.direction;
     }
 
-    //TODO: make most of the members 'protected' (needs a recent version of TypeScript - see https://github.com/Microsoft/TypeScript/pull/688)
+    serialize(): PlayerOptions {
+        var options = new PlayerOptions(this.sprite, this.nextX, this.nextY, this.speed);
+        options['route'] = this.route;
+        options['current'] = this.current;
+        options['nextT'] = this.nextT;
+        return options;
+    }
 
-    //TODO: when creating a player, have the server assign its ID to ensure all clients activate an instance of Player at once
+    //TODO: make most of the members 'protected' (needs a recent version of TypeScript - see https://github.com/Microsoft/TypeScript/pull/688)
 
     constructor(options: PlayerOptions) {
         var t = world.time | 0;
@@ -94,16 +100,23 @@ class Player implements ITarget {
         this.sprite = options.sprite | 0;
         this.speed = speed;
         this.stepT = (1000 / speed) | 0;
-        this.direction = DOWN;
+        this.direction = NONE;
         this.lookDirection = DOWN;
         this.fromT = 0;
         this.nextT = null;
         this.nextX = this.fromX = options.x;
         this.nextY = this.fromY = options.y;
-        this.route = [];
-        this.current = 0;
-
         this.moveTime = null;
+
+        var route = <Array<number>>options['route'];
+        if (Array.isArray(route)) {
+            this.route = route;
+            this.current = (<number>options['current']) | 0;
+            this.nextT = (<number>options['nextT']) | 0;
+        } else {
+            this.route = [];
+            this.current = 0;
+        }
     }
 
     look(direction: number) {
