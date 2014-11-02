@@ -6,11 +6,12 @@ var DOWN = 0;
 var LEFT = 1;
 var RIGHT = 2;
 var UP = 3;
+var NONE2 = 4; //TODO: replace NONE with NONE2 and then rename NONE2 to NONE
 
 var DIR = [3, 2, 0, 1];
 var ROT = [2, 3, 1, 0];
-var DX = [0, -1, 1, 0];
-var DY = [1, 0, 0, -1];
+var DX = [0, -1, 1, 0, 0];
+var DY = [1, 0, 0, -1, 0];
 
 interface ITarget {
     x: number;
@@ -128,6 +129,7 @@ class Player implements ITarget {
     }
 
     _move(decisionTime: number, fromTime: number, moves: Array<number>) {
+
         decisionTime |= 0;
         fromTime |= 0;
 
@@ -136,6 +138,19 @@ class Player implements ITarget {
             console.error("Attempt to change history detected.");
             return;
         }
+
+        // chack route validity
+        for (var n = 0; n < moves.length; n++) {
+            var direction = moves[n];
+            if (direction < 0 || direction > 3) {
+                console.error("Invalid route detected: ", JSON.stringify(moves));
+                return;
+            }
+        }
+
+        // determine move time or world time
+        var t = this.moveTime || world.time;
+
 
         // find the last element to keep
         var route = this.route;
@@ -223,15 +238,15 @@ class Player implements ITarget {
             }
         }
 
+        if (reroute)
+            console.log("reroute");
+
         // report the new route
         //if (discarded || moves.length > 0) {
             this.onreport(decisionTime, fromTime, moves, n);
         //} else {
         //    return;
         //}
-
-        // determine move time to make it possible to change the current move
-        var t = this.moveTime;
 
         // insert a delay before appending the new route if needed
         if (nextTime < fromTime) {
@@ -261,7 +276,7 @@ class Player implements ITarget {
         }
 
         // add new moves to the route
-        for (var i = n; n < moves.length; n++) {
+        for (var n = n; n < moves.length; n++) {
             nextTime = fromTime + this.stepT;
             d = moves[n];
             var nx = x + DX[d];

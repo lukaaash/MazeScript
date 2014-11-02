@@ -1,16 +1,5 @@
 ﻿/// <reference path="server.ts" />
 
-if (typeof importScripts === 'function') {
-    importScripts('../common/dictionary.js');
-    importScripts('../common/maze.js');
-    importScripts('../common/world.js');
-    importScripts('../common/player.js');
-    importScripts('../common/avatar.js');   
-    importScripts('../common/protocol.js');   
-    importScripts('server.js');
-    importScripts('client.js');
-}
-
 interface IWorkerSelf {
     postMessage(message: any): void;
     //addEventListener(type: string, listener: EventListener, useCapture?: boolean): void;
@@ -46,6 +35,9 @@ class WorkerServer extends Server {
 
         this.worker.onmessage = e => {
             var data = e.data;
+
+            console.log(e.data);
+
             data.received = this.time;
             var command = data['command'];
             if (typeof command !== 'number')

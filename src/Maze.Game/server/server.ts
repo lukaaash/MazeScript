@@ -105,6 +105,7 @@ class Server implements IWorld {
             default:
                 console.log('->', command, JSON.stringify(data), data['received']);
                 break;
+
             case 0:
                 console.log("-> INIT");
                 if (client.initialized) {
@@ -123,6 +124,9 @@ class Server implements IWorld {
                 break;
 
             case 3:
+                var maze = this.maze.serialize();
+                this.send(client, CREATE_MAZE, [maze]);
+
                 this._players.forEach(player => {
 
                     if (player.client != client) {
@@ -171,6 +175,15 @@ class Server implements IWorld {
                 this.sendExcept(client, MOVE_PLAYER, data);
                 break;
 
+            case SET_TILE:
+                var x = <number>data[0];
+                var y = <number>data[1];
+                var wall = <number>data[2];
+
+                if (this._maze.set(x, y, wall))
+                    this.sendExcept(client, SET_TILE, [x, y, wall]);
+
+                break;
 
         }
     }

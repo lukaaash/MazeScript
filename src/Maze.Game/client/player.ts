@@ -392,17 +392,17 @@ class Robot extends LocalPlayer {
 
         for (var i = 0; i < 8; i++) {
 
-            var h = (dx < 0) ? LEFT : (dx > 0) ? RIGHT : NONE;
-            var v = (dy < 0) ? UP : (dy > 0) ? DOWN : NONE;
+            var h = (dx < 0) ? LEFT : (dx > 0) ? RIGHT : NONE2;
+            var v = (dy < 0) ? UP : (dy > 0) ? DOWN : NONE2;
 
-            if (h == NONE && v == NONE)
+            if (h == NONE2 && v == NONE2)
                 break;
 
             var nx = x + DX[h];
             var ny = y + DY[v];
 
-            var wh = world.maze.isWall(nx, y);
-            var wv = world.maze.isWall(x, ny);
+            var wh = world.maze.isWall(nx, y) || h == NONE2;
+            var wv = world.maze.isWall(x, ny) || v == NONE2;
 
             if (wh && wv)
                 break;
@@ -418,6 +418,8 @@ class Robot extends LocalPlayer {
             }
 
             if (!wh) {
+                if (h == 4)
+                    console.log('!!!');
                 moves.push(h);
                 dx += x - nx;
                 x = nx;
@@ -425,6 +427,8 @@ class Robot extends LocalPlayer {
             }
 
             if (!wv) {
+                if (v == 4)
+                    console.log('!!!');
                 moves.push(v);
                 dy += y - ny;
                 y = ny;

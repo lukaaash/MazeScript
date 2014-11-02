@@ -12,9 +12,12 @@ class Maze2 extends Maze {
     atlas: N4.Atlas;
     tiles: Array<N4.Tile>;
     layer: N4.Layer;
+    codes: Maze;
 
     constructor(width: number, height: number) {
         super(width, height);
+
+        this.codes = new Maze(width, height);
 
         this.map = [
             24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
@@ -56,6 +59,33 @@ class Maze2 extends Maze {
         this.layer = new N4.Layer(width, height, this.atlas);
     }
 
+    deserialize(data: any) {
+        super.deserialize(data);
+
+        this.layer = new N4.Layer(this.width, this.height, this.atlas);
+        this.codes = new Maze(this.width, this.height);
+
+        for (var j = 0; j < this.height; j++) {
+            for (var i = 0; i <= this.width; i++) {
+                var code = this.getCode(i, j);
+                this.codes.set(i, j, code);
+            }
+        }
+
+        for (var j = 0; j < this.height; j++) {
+            for (var i = 0; i < this.width; i++) {
+                var code = this.codes.get(i, j);
+
+                if (code == 0) {
+                    //this.layer.setTile(x, y, null); // or use tile this.tiles[36]
+                } else {
+                    code = this.map[code & 255];
+                    this.layer.setTile(i, j, this.tiles[code]);
+                }
+            }
+        }
+    }
+
     render() {
         this.layer.render();
     }
@@ -72,33 +102,42 @@ class Maze2 extends Maze {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height)
             return;
 
-        var b0 = this._get(x - 1, y - 1);
-        var b1 = this._get(x, y - 1);
-        var b2 = this._get(x + 1, y - 1);
-        var b3 = this._get(x - 1, y);
-        var b4 = this._get(x, y);
-        var b5 = this._get(x + 1, y);
-        var b6 = this._get(x - 1, y + 1);
-        var b7 = this._get(x, y + 1);
-        var b8 = this._get(x + 1, y + 1);
+        var code = this.getCode(x, y);
+        this.setTile(x, y, code);
+    }
+
+    private getCode(x: number, y: number): number {
+        var b0 = this.get(x - 1, y - 1);
+        var b1 = this.get(x, y - 1);
+        var b2 = this.get(x + 1, y - 1);
+        var b3 = this.get(x - 1, y);
+        var b4 = this.get(x, y);
+        var b5 = this.get(x + 1, y);
+        var b6 = this.get(x - 1, y + 1);
+        var b7 = this.get(x, y + 1);
+        var b8 = this.get(x + 1, y + 1);
 
         var code;
         if (b4 == 0) {
-            code = 36;
+            code = 0;
         } else {
-            code = (b1 << 4) + (b3 << 5) + (b5 << 6) + (b7 << 7) + (b0 << 0) + (b2 << 1) + (b6 << 2) + (b8 << 3);
-            code = this.map[code];
+            code = 256 + (b1 << 4) + (b3 << 5) + (b5 << 6) + (b7 << 7) + (b0 << 0) + (b2 << 1) + (b6 << 2) + (b8 << 3);
         }
 
-        var offset = y * this.width + x;
-        if (this.codes[offset] == code)
+        return code;
+    }
+
+    private setTile(x: number, y: number, code: number): void {
+        if (this.codes.get(x, y) == code)
             return;
 
-        this.codes[offset] = code;
-        if (code == 36)
-            this.layer.setTile(x, y, null);
-        else
+        this.codes.set(x, y, code);
+        if (code == 0) {
+            this.layer.setTile(x, y, null); // or use this.tiles[36]
+        } else {
+            code = this.map[code & 255];
             this.layer.setTile(x, y, this.tiles[code]);
+        }
     }
 }
 

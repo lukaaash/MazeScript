@@ -52,6 +52,7 @@
     <TypeScriptCompile Include="client\player.ts" />
     <TypeScriptCompile Include="client\sprites.ts" />
     <TypeScriptCompile Include="server.ts" />
+    <TypeScriptCompile Include="worker.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\simple.fsh" />

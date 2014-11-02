@@ -6,9 +6,11 @@ var maze = require("./server.js");
 var WebSocketServer = ws.Server;
 
 var port = process.env.port || 1337;
+var host = "0.0.0.0";
 
 var wss = new WebSocketServer({
-    port: port
+    port: port,
+    host: host
 });
 
 wss.on('connection', function (ws) {
@@ -39,3 +41,5 @@ wss.on('connection', function (ws) {
     });
     */
 });
+
+console.log("Maze server running at port %s...", port);

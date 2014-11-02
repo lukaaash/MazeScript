@@ -67,7 +67,17 @@ class WebSocketClient extends Client {
 
     send(packet: any) {
         //console.log("Sending", packet);
-        this.socket.send(packet);
+        try {
+            this.socket.send(packet);
+        } catch (e) {
+            console.warn("Caught error: ", e);
+            var event = <CloseEvent>{
+                wasClean: true,
+                reason: '',
+                code: 1002,
+            }
+            this.socket.onclose(event);
+        }
     }
 
     fail(message: string) {

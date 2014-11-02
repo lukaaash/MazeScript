@@ -6,10 +6,11 @@
 /// <reference path="maze.ts" />
 
 interface IWorld {
-    playerCreate? (player: LocalPlayer, options: PlayerOptions);
-    playerMove? (packet: Array<any>);
+    playerCreate? (player: LocalPlayer, options: PlayerOptions): void;
+    playerMove? (packet: Array<any>): void;
     onready?: Function;
-    sync? ();
+    sync? (): void;
+    setMazeTile? (x: number, y: number, wall: number): void;
 }
 
 
@@ -61,12 +62,19 @@ class World implements IWorld {
         this._onready = value;
     }
 
+    setMazeTile(x: number, y: number, wall: number) {
+        if (this.maze.set(x, y, wall)) {
+            this.send(SET_TILE, [x, y, wall]);
+        }
+    }
+
     init() {
         this.send(INIT);
     }
 
-    getAvatars() {
-        this.send(GET_AVATARS);
+    getWorld() {
+        console.log("!!!------------------------------");
+        this.send(GET_WORLD);
     }
 
     sync() {
@@ -120,7 +128,9 @@ class World implements IWorld {
                     this._ready = true;
                     this._onready(new N4.Success(this));
 
-                    this.getAvatars();
+                    console.log("r343434343433");
+
+                    this.getWorld();
                 }
 
                 break;
@@ -147,12 +157,18 @@ class World implements IWorld {
                 this._players.add(playerId, avatar);
                 break;
 
+            case CREATE_MAZE:
+                console.log("------------------------------");
+                var maze = data[0];
+                this._maze.deserialize(maze);
+                break;
+
             case MOVE_PLAYER:
                 var decisionTime = <number>data[0];
                 var playerId = <number>data[1];
                 var fromTime = <number>data[2];
                 var moves = <Array<number>>data[3];
-                console.log("-> MOVE_PLAYER", 'player_id', playerId, 'from_time', decisionTime + "+" + fromTime, 'moves', JSON.stringify(moves));
+                console.log("-> MOVE_PLAYER", 'player_id', playerId, 'recv_time', world.time, 'from_time', decisionTime + "+" + fromTime, 'moves', JSON.stringify(moves));
 
                 //TODO: detect lags
 
@@ -177,6 +193,15 @@ class World implements IWorld {
                 }
 
                 this._players.remove(playerId);
+                break;
+
+            case SET_TILE:
+                var x = <number>data[0];
+                var y = <number>data[1];
+                var wall = <number>data[2];
+
+                this._maze.set(x, y, wall);
+
                 break;
         }
     }
@@ -205,7 +230,7 @@ class LocalWorld extends World {
     constructor(game: N4.Game, sprites: Sprites) {
         super(game, sprites);
 
-        this.worker = new Worker("code/server/worker.js");
+        this.worker = new Worker("worker.js");
 
         this.supportsTransferables = null;
 

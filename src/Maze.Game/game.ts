@@ -93,7 +93,7 @@ class Level {
                 })) return;
             }
 
-            world.maze.change(x, y, this.drawMode);
+            world.setMazeTile(x, y, this.drawMode);
         }
     }
 
@@ -209,7 +209,8 @@ if (loc.protocol === "https:") {
 url = scheme + loc.host + url;
 */
 
-var url = "ws://localhost:1337";
+var localUrl = "ws://localhost:1337";
+var remoteUrl = "ws://n3.nuane.com:1337";
 
 var level = null;
 
@@ -220,8 +221,12 @@ game.on('ready', () => {
 
     var sprites = new Sprites();
 
-    //world = new LocalWorld(game, sprites);
-    world = new RemoteWorld(game, sprites, url);
+    if (window.location.hash == '#local')
+        world = new RemoteWorld(game, sprites, localUrl);
+    else if (window.location.hash == '#online')
+        world = new RemoteWorld(game, sprites, remoteUrl);
+    else
+        world = new LocalWorld(game, sprites);
 
     world.onready = () => {
         //alert('ready');

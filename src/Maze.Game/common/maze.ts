@@ -5,66 +5,112 @@ class Maze {
     width: number;
     height: number;
     walls: Array<number>;
-    codes: Array<number>;
 
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.walls = new Array<number>(width * height);
-        this.codes = new Array<number>(width * height);
-        for (var i = 0; i < width * height; i++) {
-            this.walls[i] = 0;
-            this.codes[i] = 36;
+    }
+
+    deserialize(data: any) {
+        var packed = <Array<number>>data;
+
+        this.walls = [];
+        this.width = packed.shift();
+        this.height = packed.shift();
+
+        var offset = 0;
+        while (packed.length > 0) {
+            var v = packed.shift();
+            var count;
+            if (v < 0) {
+                count = -v;
+                v = packed.shift();
+                while (count > 0) {
+                    this.walls.push(v);
+                    count--;
+                }
+            } else {
+                this.walls.push(v);
+            }
         }
+    }
+
+    serialize(): any {
+        var packed = [this.width, this.height];
+        var last = -1;
+        var count = 0;
+        for (var i = 0; i < this.walls.length; i++) {
+            var v = this.walls[i] | 0;
+            if (v == last) {
+                count++;
+                continue;
+            } else {
+                if (count == 1) {
+                    packed.push(last);
+                } else if (count > 1) {
+                    packed.push(-count);
+                    packed.push(last);
+                }
+
+                last = v;
+                count = 1;
+            }
+        }
+
+        if (count > 0) {
+            packed.push(-count);
+            packed.push(last);
+        }
+
+        return packed;
     }
 
     render() {
     }
 
     add(x: number, y: number) {
-        this.change(x, y, 1);
+        this.set(x, y, 1);
     }
 
     remove(x: number, y: number) {
-        this.change(x, y, 0);
+        this.set(x, y, 0);
     }
 
     toggle(x: number, y: number) {
-        this.change(x, y, null);
+        this.set(x, y, null);
     }
 
-    change(x: number, y: number, w: number) {
+    set(x: number, y: number, w: number): boolean {
         x |= 0;
         y |= 0;
-        w &= 1;
+        w |= 0;
 
         if (x < 0 || x >= this.width || y < 0 || y >= this.height)
-            return;
+            return false;
 
         var offset = y * this.width + x;
-        var v = this.walls[offset];
+        var v = this.walls[offset] | 0;
         if (w == v)
-            return;
-
-        if (w == null)
-            w = 1 - v;
+            return false;
 
         this.walls[offset] = w;
 
         this.onchange(x, y);
+        return true;
     }
 
-    isWall(x: number, y: number) {
-        return this._get(x, y) != 0;
+    isWall(x: number, y: number): boolean {
+        return this.get(x, y) != 0;
     }
 
-    _get(x: number, y: number) {
+    get(x: number, y: number): number {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height)
             return 1;
 
         var offset = y * this.width + x;
         var v = this.walls[offset];
-        return (v == 0) ? 0 : 1;
+        return v | 0;
     }
 
     onchange(x: number, y: number) {
