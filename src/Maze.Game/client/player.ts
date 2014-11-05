@@ -30,7 +30,7 @@ class LocalPlayer extends Player {
         super(options);
 
         this.sprites = sprites;
-        this.lastActionT = world.time | 0;;
+        this.lastActionT = world.time | 0;
         this.shouldThink = false;
         this.decisionTime = null;
         this.moves = [];
