@@ -133,8 +133,6 @@ class World implements IWorld {
                     this._ready = true;
                     this._onready(new N4.Success(this));
 
-                    console.log("r343434343433");
-
                     this.getWorld();
                 }
 
@@ -163,7 +161,6 @@ class World implements IWorld {
                 break;
 
             case CREATE_MAZE:
-                console.log("------------------------------");
                 var maze = data[0];
                 this._maze.deserialize(maze);
                 break;

@@ -412,8 +412,6 @@ class Robot extends LocalPlayer {
             }
 
             if (!wh) {
-                if (h == 4)
-                    console.log('!!!');
                 moves.push(h);
                 dx += x - nx;
                 x = nx;
@@ -421,8 +419,6 @@ class Robot extends LocalPlayer {
             }
 
             if (!wv) {
-                if (v == 4)
-                    console.log('!!!');
                 moves.push(v);
                 dy += y - ny;
                 y = ny;
