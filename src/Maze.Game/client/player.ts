@@ -5,31 +5,25 @@
 
 class LocalAvatar extends Avatar {
 
-    private sprites: Sprites;
-
-    constructor(sprites: Sprites, id: number, options: PlayerOptions) {
+    constructor(id: number, options: PlayerOptions) {
         super(id, options);
-
-        this.sprites = sprites;
     }
 
     render(x: number, y: number, sprite: number, direction: number, step: number) {
-        this.sprites.render(x, y, sprite, direction, step);
+        world.sprites.render(x, y, sprite, direction, step);
     }
 }
 
 class LocalPlayer extends Player {
 
-    private sprites: Sprites;
     private lastActionT: number;
     private shouldThink: boolean;
     private decisionTime: number;
     private moves: Array<number>;
 
-    constructor(sprites: Sprites, options: PlayerOptions) {
+    constructor(options: PlayerOptions) {
         super(options);
 
-        this.sprites = sprites;
         this.lastActionT = world.time | 0;
         this.shouldThink = false;
         this.decisionTime = null;
@@ -57,7 +51,7 @@ class LocalPlayer extends Player {
     }
 
     render(x: number, y: number, sprite: number, direction: number, step: number) {
-        this.sprites.render(x, y, sprite, direction, step);
+        world.sprites.render(x, y, sprite, direction, step);
     }
 
     move(moves: Array<number>) {
@@ -128,8 +122,8 @@ class Human extends LocalPlayer {
     private directionCurr: number;
     private directionNext: number;
 
-    constructor(sprites: Sprites, sprite: number, x: number, y: number, speed?: number) {
-        super(sprites, new PlayerOptions(sprite, x, y, speed));
+    constructor(sprite: number, x: number, y: number, speed?: number) {
+        super(new PlayerOptions(sprite, x, y, speed));
         this.directionPrev = NONE;
         this.directionCurr = NONE;
         this.directionNext = NONE;
@@ -231,8 +225,8 @@ class Fool extends LocalPlayer {
     private rot: number;
     private inc: number;
 
-    constructor(sprites: Sprites, sprite: number, x: number, y: number, speed?: number) {
-        super(sprites, new PlayerOptions(sprite, x, y, speed));
+    constructor(sprite: number, x: number, y: number, speed?: number) {
+        super(new PlayerOptions(sprite, x, y, speed));
         this.rot = 0;
         this.inc = 1;
         this.poke();
@@ -329,8 +323,8 @@ class Robot extends LocalPlayer {
     private alternative: ITarget;
     private isIdle: boolean;
 
-    constructor(sprites: Sprites, sprite: number, x: number, y: number, speed?: number) {
-        super(sprites, new PlayerOptions(sprite, x, y, speed));
+    constructor(sprite: number, x: number, y: number, speed?: number) {
+        super(new PlayerOptions(sprite, x, y, speed));
         this.target = null;
     }
 

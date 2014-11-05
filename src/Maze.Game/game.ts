@@ -10,8 +10,6 @@ var KEYDOWN = 40;
 
 class Level {
 
-    sprites: Sprites;
-
     human: Human;
 
     drawMode: number;
@@ -19,9 +17,7 @@ class Level {
 
     keys: Array<boolean>;
     
-    constructor(sprites: Sprites) {
-        this.sprites = sprites;
-
+    constructor() {
         this.drawMode = 1;
         this.drawOn = false;
 
@@ -35,7 +31,7 @@ class Level {
         game.on('keypress', e => this.onKeyPress(e));
         game.on('mousewheel', e => this.onMouseWheel(e));
 
-        this.human = new Human(this.sprites, 1, 8, 8, 4);
+        this.human = new Human(1, 8, 8, 4);
 
         this.keys = new Array(256);
     }
@@ -48,7 +44,7 @@ class Level {
             player.onrender(t);
         });
 
-        this.sprites.atlas._flush();
+        world.sprites.atlas._flush();
 
         world.maze.render();
     }
@@ -142,41 +138,41 @@ class Level {
 
         if (this.human != null) {
             if (e.char == 'z') {
-                var robot = new Robot(this.sprites, 0, 4, 6, 0.7 + Math.random() * 0.3);
+                var robot = new Robot(0, 4, 6, 0.7 + Math.random() * 0.3);
                 robot.follow(this.human);
             }
 
             if (e.char == 'h') {
-                var robot = new Robot(this.sprites, 1, 4, 6, 2.6 + Math.random() * 0.5);
+                var robot = new Robot(1, 4, 6, 2.6 + Math.random() * 0.5);
                 robot.follow(this.human);
             }
 
             if (e.char == 'k') {
-                var robot = new Robot(this.sprites, 2, 16, 6, 2.6 + Math.random() * 0.5);
+                var robot = new Robot(2, 16, 6, 2.6 + Math.random() * 0.5);
                 robot.follow(this.human);
             }
 
             if (e.char == 'x') {
-                var robot = new Robot(this.sprites, 3, 4, 6, 2.8 + Math.random() * 0.4);
+                var robot = new Robot(3, 4, 6, 2.8 + Math.random() * 0.4);
                 robot.follow(this.human);
             }
 
             if (e.char == 'd') {
-                var fool = new Fool(this.sprites, 4, 4, 6, 3.3 + Math.random() * 0.4);
+                var fool = new Fool(4, 4, 6, 3.3 + Math.random() * 0.4);
             }
 
             if (e.char == 'v') {
-                var robot = new Robot(this.sprites, 5, 4, 6, 1.5 + Math.random() * 0.4);
+                var robot = new Robot(5, 4, 6, 1.5 + Math.random() * 0.4);
                 robot.follow(this.human);
             }
 
             if (e.char == 'p') {
-                var robot = new Robot(this.sprites, 6, 4, 6, 1.0 + Math.random() * 0.3);
+                var robot = new Robot(6, 4, 6, 1.0 + Math.random() * 0.3);
                 robot.follow(this.human);
             }
 
             if (e.char == 's') {
-                var robot = new Robot(this.sprites, 7, 4, 6, 0.9 + Math.random() * 0.5);
+                var robot = new Robot(7, 4, 6, 0.9 + Math.random() * 0.5);
                 robot.follow(this.human);
             }
         }
@@ -230,7 +226,7 @@ game.on('ready', () => {
 
     world.onready = () => {
         //alert('ready');
-        level = new Level(sprites);
+        level = new Level();
 
     }
 

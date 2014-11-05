@@ -11,6 +11,7 @@ interface IWorld {
     onready?: Function;
     sync? (): void;
     setMazeTile? (x: number, y: number, wall: number): void;
+    sprites?: Sprites;
 }
 
 
@@ -48,6 +49,10 @@ class World implements IWorld {
     //TODO: make this protected
     set maze(value: Maze) {
         this._maze = value;
+    }
+
+    get sprites(): Sprites {
+        return this._sprites;
     }
 
     get onready(): Function {
@@ -153,7 +158,7 @@ class World implements IWorld {
                 var playerOptions = <PlayerOptions>data[1];
                 console.log("<- CREATE_AVATAR", "player_id", playerId, "options", playerOptions);
 
-                var avatar = new LocalAvatar(this._sprites, playerId, playerOptions);
+                var avatar = new LocalAvatar(playerId, playerOptions);
                 this._players.add(playerId, avatar);
                 break;
 
