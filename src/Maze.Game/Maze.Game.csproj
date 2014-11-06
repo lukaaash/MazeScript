@@ -23,6 +23,9 @@
     <Content Include="resources\walls.png" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="client\bird.ts" />
+    <TypeScriptCompile Include="client\follower.ts" />
+    <TypeScriptCompile Include="client\robot.ts" />
     <TypeScriptCompile Include="common\avatar.ts" />
     <TypeScriptCompile Include="common\common.ts" />
     <TypeScriptCompile Include="common\dictionary.ts" />

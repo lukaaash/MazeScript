@@ -1,6 +1,8 @@
 ﻿/// <reference path="ngles/all.ts" />
 /// <reference path="client/world.ts" />
 /// <reference path="client/player.ts" />
+/// <reference path="client/follower.ts" />
+/// <reference path="client/bird.ts" />
 /// <reference path="client/sprites.ts" />
 
 var KEYLEFT = 37;
@@ -138,22 +140,22 @@ class Level {
 
         if (this.human != null) {
             if (e.char == 'z') {
-                var robot = new Robot(0, 4, 6, 0.7 + Math.random() * 0.3);
+                var robot = new Follower(0, 4, 6, 0.7 + Math.random() * 0.3);
                 robot.follow(this.human);
             }
 
             if (e.char == 'h') {
-                var robot = new Robot(1, 4, 6, 2.6 + Math.random() * 0.5);
+                var robot = new Follower(1, 4, 6, 2.6 + Math.random() * 0.5);
                 robot.follow(this.human);
             }
 
             if (e.char == 'k') {
-                var robot = new Robot(2, 16, 6, 2.6 + Math.random() * 0.5);
+                var robot = new Follower(2, 16, 6, 2.6 + Math.random() * 0.5);
                 robot.follow(this.human);
             }
 
             if (e.char == 'x') {
-                var robot = new Robot(3, 4, 6, 2.8 + Math.random() * 0.4);
+                var robot = new Follower(3, 4, 6, 2.8 + Math.random() * 0.4);
                 robot.follow(this.human);
             }
 
@@ -162,17 +164,17 @@ class Level {
             }
 
             if (e.char == 'v') {
-                var robot = new Robot(5, 4, 6, 1.5 + Math.random() * 0.4);
+                var robot = new Follower(5, 4, 6, 1.5 + Math.random() * 0.4);
                 robot.follow(this.human);
             }
 
             if (e.char == 'p') {
-                var robot = new Robot(6, 4, 6, 1.0 + Math.random() * 0.3);
-                robot.follow(this.human);
+                var bird = new Bird(6, 4, 6, 1.0 + Math.random() * 0.3);
+                bird.avoid(this.human, 8);
             }
 
             if (e.char == 's') {
-                var robot = new Robot(7, 4, 6, 0.9 + Math.random() * 0.5);
+                var robot = new Follower(7, 4, 6, 0.9 + Math.random() * 0.5);
                 robot.follow(this.human);
             }
         }
