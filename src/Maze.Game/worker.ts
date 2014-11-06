@@ -1,6 +1,7 @@
 ﻿
 if (typeof importScripts === 'function') {
     importScripts('common/dictionary.js');
+    importScripts('common/common.js');
     importScripts('common/maze.js');
     importScripts('common/world.js');
     importScripts('common/player.js');

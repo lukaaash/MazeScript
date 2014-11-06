@@ -5,8 +5,25 @@ interface Process {
 
 declare var process: Process;
 declare var global: any;
+declare var self: Window;
 
-class PerformaceBad {
+class PerformaceBrowser {
+
+    private start: number;
+    private hrtime: Function;
+
+    constructor() {
+        this.start = new Date().getTime();
+    }
+
+    now(): number {
+        var t = (new Date().getTime() - this.start);
+        return t;
+    }
+}
+
+
+class PerformaceNode {
 
     private start: number;
     private hrtime: Function;
@@ -16,31 +33,8 @@ class PerformaceBad {
     }
 
     now(): number {
-        return (this.getTime() - this.start) / 1000000;
-    }
-
-    private getTime() {
-        var t = process.hrtime();
-        return t[0] * 1000000000 + t[1];
-    }
-}
-
-class Performace {
-
-    private start2: number;
-    private start: number;
-    private hrtime: Function;
-
-    constructor() {
-        this.start = this.getTime();
-        this.start2 = new Date().getTime();
-    }
-
-    now(): number {
-        var x = (this.getTime() - this.start) / 1000000;
-        //var y = (new Date().getTime() - this.start2) * 1000;
-        //console.log(x, y);
-        return x;
+        var t = (this.getTime() - this.start) / 1000000;
+        return t;
     }
 
     private getTime() {
@@ -49,8 +43,12 @@ class Performace {
     }
 
 }
-
 
 if (typeof performance === 'undefined') {
-    global.performance = new Performace();
+    if (typeof window !== 'undefined')
+        window.performance = <any>new PerformaceBrowser();
+    else if (typeof global === 'undefined')
+        self.performance = <any>new PerformaceBrowser();
+    else
+        global.performance = <any>new PerformaceNode();
 }

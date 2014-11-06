@@ -1,4 +1,5 @@
 ﻿/// <reference path="ngles/all.ts" />
+/// <reference path="common/common.ts" />
 /// <reference path="client/world.ts" />
 /// <reference path="client/player.ts" />
 /// <reference path="client/follower.ts" />
